@@ -38,8 +38,7 @@ void setup_state(SIMON_STATE s) {
   data.state = s;
 }
 
-
-void loop() {
+void handle_pattern(){
   data.now = millis();
 
   switch (data.state) {
@@ -107,4 +106,8 @@ void setup() {
   pinMode(SIMON_LED2, OUTPUT);
   pinMode(SIMON_LED3, OUTPUT);
   data.state = RESET;
+}
+
+void loop() {
+  handle_pattern();
 }
