@@ -10,6 +10,7 @@ const int8_t SIMON_PATTERN_LENGTH = 12;
 const int16_t LIGHT_BLINK_MILLI = 400;
 const int16_t PATTERN_SPACING_MILLI = 2000;
 enum SIMON_STATE {
+  RESET,
   FLASH,
   BLINK_WAIT,
   BLANK,
@@ -37,27 +38,23 @@ void setup_state(SIMON_STATE s) {
   data.state = s;
 }
 
-void setup() {
-  randomSeed(analogRead(0)); // assumes pin0 is unconnected for entropy sake
-  time_t game_start = millis();
-  for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
-    data.attempt[i] = UNENTERED_VALUE;
-    data.pattern[i] = random(SIMON_LED0, SIMON_LED3 + 1); // assumes SIMON_LEDs are sequential
-  }
-  data.curr_index_pattern = 0;
-  data.state = FLASH;
-  data.last_update = millis();
-
-  pinMode(SIMON_LED0, OUTPUT);
-  pinMode(SIMON_LED1, OUTPUT);
-  pinMode(SIMON_LED2, OUTPUT);
-  pinMode(SIMON_LED3, OUTPUT);
-}
 
 void loop() {
   data.now = millis();
 
   switch (data.state) {
+    case RESET:
+    {
+      blank_all();
+      for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
+        data.attempt[i] = UNENTERED_VALUE;
+        data.pattern[i] = random(SIMON_LED0, SIMON_LED3 + 1); // assumes SIMON_LEDs are sequential
+      }
+      data.curr_index_pattern = 0;
+      data.state = FLASH;
+      data.last_update = millis();
+    }
+    break;
     case FLASH:
     {
       // blink current light
@@ -101,4 +98,13 @@ void loop() {
       // TODO: error recovery?
     }
   }
+}
+void setup() {
+  randomSeed(analogRead(0)); // assumes pin0 is unconnected for entropy sake
+  time_t game_start = millis();
+  pinMode(SIMON_LED0, OUTPUT);
+  pinMode(SIMON_LED1, OUTPUT);
+  pinMode(SIMON_LED2, OUTPUT);
+  pinMode(SIMON_LED3, OUTPUT);
+  data.state = RESET;
 }
