@@ -1,14 +1,14 @@
 typedef unsigned long time_t;
 
-#define SIMON_LED0 2
-#define SIMON_LED1 3
-#define SIMON_LED2 4
-#define SIMON_LED3 5
+const int8_t SIMON_LED0 = 2;
+const int8_t SIMON_LED1 = 3;
+const int8_t SIMON_LED2 = 4;
+const int8_t SIMON_LED3 = 5;
 
-#define UNENTERED_VALUE -1
-#define SIMON_PATTERN_LENGTH 12
-#define LIGHT_BLINK_MILLI 400
-#define PATTERN_SPACING_MILLI 2000
+const int8_t UNENTERED_VALUE = -1;
+const int8_t SIMON_PATTERN_LENGTH = 12;
+const int16_t LIGHT_BLINK_MILLI = 400;
+const int16_t PATTERN_SPACING_MILLI = 2000;
 enum SIMON_STATE {
   FLASH,
   BLINK_WAIT,
