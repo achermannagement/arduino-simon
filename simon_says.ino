@@ -25,7 +25,7 @@ typedef struct {
   time_t now;
 } simon_round_data;
 
-simon_round_data data;
+simon_round_data simon_data;
 
 void blank_all() {
   for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
@@ -33,40 +33,40 @@ void blank_all() {
   }
 }
 
-void setup_state(SIMON_STATE s) {
-  data.last_update = millis();
-  data.state = s;
+void setup_state(SIMON_STATE s, simon_round_data *data) {
+  data->last_update = millis();
+  data->state = s;
 }
 
-void handle_pattern(){
-  data.now = millis();
+void handle_pattern(simon_round_data *data){
+  data->now = millis();
 
-  switch (data.state) {
+  switch (data->state) {
     case RESET:
     {
       blank_all();
       for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
-        data.attempt[i] = UNENTERED_VALUE;
-        data.pattern[i] = random(SIMON_LED0, SIMON_LED3 + 1); // assumes SIMON_LEDs are sequential
+        data->attempt[i] = UNENTERED_VALUE;
+        data->pattern[i] = random(SIMON_LED0, SIMON_LED3 + 1); // assumes SIMON_LEDs are sequential
       }
-      data.curr_index_pattern = 0;
-      data.state = FLASH;
-      data.last_update = millis();
+      data->curr_index_pattern = 0;
+      data->state = FLASH;
+      data->last_update = millis();
     }
     break;
     case FLASH:
     {
       // blink current light
-      digitalWrite(data.pattern[data.curr_index_pattern], HIGH);
-      data.curr_index_pattern = (data.curr_index_pattern + 1) % SIMON_PATTERN_LENGTH;
-      setup_state(BLINK_WAIT);
+      digitalWrite(data->pattern[data->curr_index_pattern], HIGH);
+      data->curr_index_pattern = (data->curr_index_pattern + 1) % SIMON_PATTERN_LENGTH;
+      setup_state(BLINK_WAIT, data);
     }
     break;
 
     case BLINK_WAIT:
     {
-      if(data.now > data.last_update + LIGHT_BLINK_MILLI){
-        setup_state(BLANK);
+      if(data->now > data->last_update + LIGHT_BLINK_MILLI){
+        setup_state(BLANK, data);
       }
     }
     break;
@@ -74,11 +74,11 @@ void handle_pattern(){
     case BLANK:
     {
       blank_all();
-      if(data.now > data.last_update + LIGHT_BLINK_MILLI){
-        if(data.curr_index_pattern == 0) {
-          setup_state(PATTERN_SPACING);
+      if(data->now > data->last_update + LIGHT_BLINK_MILLI){
+        if(data->curr_index_pattern == 0) {
+          setup_state(PATTERN_SPACING, data);
         } else {
-          setup_state(FLASH);
+          setup_state(FLASH, data);
         }
       }
     }
@@ -86,8 +86,8 @@ void handle_pattern(){
 
     case PATTERN_SPACING:
     {
-      if(data.now > data.last_update + PATTERN_SPACING_MILLI){
-        setup_state(FLASH);
+      if(data->now > data->last_update + PATTERN_SPACING_MILLI){
+        setup_state(FLASH, data);
       }
     }
     break;
@@ -105,9 +105,9 @@ void setup() {
   pinMode(SIMON_LED1, OUTPUT);
   pinMode(SIMON_LED2, OUTPUT);
   pinMode(SIMON_LED3, OUTPUT);
-  data.state = RESET;
+  simon_data.state = RESET;
 }
 
 void loop() {
-  handle_pattern();
+  handle_pattern(&simon_data);
 }
