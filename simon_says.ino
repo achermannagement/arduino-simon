@@ -33,7 +33,7 @@ typedef struct {
 simon_round_data simon_data;
 
 void blank_all() {
-  for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
+  for(int i = SIMON_LED0; i <= SIMON_LED3; i++){
     digitalWrite(i, LOW); // not the most efficient way, but easy
   }
 }
