@@ -30,7 +30,6 @@ typedef struct {
   int8_t curr_index_pattern;
   SIMON_STATE state;
   time_t last_update;
-  time_t now;
 } simon_round_data;
 
 simon_round_data simon_data;
@@ -46,8 +45,11 @@ void setup_state(SIMON_STATE s, simon_round_data *data) {
   data->state = s;
 }
 
+/**
+ * Handles the display of the Simon pattern
+ */
 void handle_pattern(simon_round_data *data){
-  data->now = millis();
+  time_t now = millis();
 
   switch (data->state) {
     case RESET:
@@ -72,7 +74,7 @@ void handle_pattern(simon_round_data *data){
 
     case BLINK_WAIT:
     {
-      if(data->now > data->last_update + LIGHT_BLINK_MILLI){
+      if(now > data->last_update + LIGHT_BLINK_MILLI){
         setup_state(BLANK, data);
       }
     }
@@ -81,7 +83,7 @@ void handle_pattern(simon_round_data *data){
     case BLANK:
     {
       blank_all();
-      if(data->now > data->last_update + LIGHT_BLINK_MILLI){
+      if(now > data->last_update + LIGHT_BLINK_MILLI){
         if(data->curr_index_pattern == 0) {
           setup_state(PATTERN_SPACING, data);
         } else {
@@ -93,7 +95,7 @@ void handle_pattern(simon_round_data *data){
 
     case PATTERN_SPACING:
     {
-      if(data->now > data->last_update + PATTERN_SPACING_MILLI){
+      if(now > data->last_update + PATTERN_SPACING_MILLI){
         setup_state(FLASH, data);
       }
     }
