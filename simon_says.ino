@@ -192,6 +192,10 @@ typedef struct {
   time_t start;
   int8_t attempt[SIMON_PATTERN_LENGTH]; // stores user attempt
   int8_t attempt_index;
+
+  // input entry
+  bool display_input;
+  int8_t curr_input;
 } game_data;
 game_data data;
 
@@ -213,6 +217,8 @@ void handle_entry() {
     data.attempt[data.attempt_index] = pressed + SIMON_LED0;
     data.attempt_index++;
     buttons[pressed].last_pressed = millis();
+    data.display_input = true;
+    data.curr_input = pressed;
     if(data.attempt_index == SIMON_PATTERN_LENGTH){
       bool correct = true;
       for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
@@ -245,6 +251,8 @@ void handle_game() {
         data.attempt[i] = UNENTERED_VALUE;
       }
       reset_attempt();
+      data.display_input = false;
+      data.curr_input = 0;
       data.state = PATTERN;
     }
     break;
@@ -265,6 +273,14 @@ void handle_game() {
     case USER_ENTRY:
     {
       handle_entry();
+
+      if (data.display_input) {
+        digitalWrite(data.curr_input + SIMON_LED0, HIGH);
+        if(now - buttons[data.curr_input].last_pressed > LIGHT_BLINK_MILLI){
+          data.display_input = false;
+          blank_all();
+        }
+      }
       int8_t count = 0;
       for(int i = 0; i < BUTTONS; i++){
         if(now - buttons[i].last_pressed > PATTERN_SPACING_MILLI) {
