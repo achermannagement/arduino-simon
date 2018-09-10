@@ -13,6 +13,9 @@ const int8_t BUTTON2 = 11;
 const int8_t BUTTON3 = 12;
 
 const int8_t SIMON_PATTERN_LENGTH = 4;
+const int8_t PIEZO = 8;
+const int16_t PIEZO_FREQ = 100;
+
 const int16_t LIGHT_BLINK_MILLI = 400;
 const int16_t PATTERN_SPACING_MILLI = 2000;
 enum SIMON_STATE {
@@ -282,6 +285,8 @@ void handle_game() {
     case LOSE:
     {
       Serial.println("LOSE");
+      tone(PIEZO, PIEZO_FREQ, LIGHT_BLINK_MILLI);
+      delay(LIGHT_BLINK_MILLI);
       data.state = GAME_RESET;
     }
     break;
@@ -314,6 +319,10 @@ void setup() {
 
   // setup buttons
   setup_buttons();
+
+  // piezo
+  pinMode(PIEZO, OUTPUT);
+  digitalWrite(PIEZO, LOW);
 
   // for debugging
   Serial.begin(9600);
