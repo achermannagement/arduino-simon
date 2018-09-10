@@ -107,7 +107,7 @@ void handle_pattern(simon_round_data *data){
 }
 // buttons are pulled down, when no button pressed 0V, but pressed button 5V
 const int8_t BUTTONS = 4;  
-const int16_t DEBOUNCE_PERIOD = 50;
+const int16_t DEBOUNCE_PERIOD = 100;
 enum BUTTON_STATE {
   WAITING,
   BUTTON_DOWN,
