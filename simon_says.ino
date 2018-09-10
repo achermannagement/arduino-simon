@@ -12,12 +12,29 @@ const int8_t BUTTON1 = 10;
 const int8_t BUTTON2 = 11;
 const int8_t BUTTON3 = 12;
 
-const int8_t SIMON_PATTERN_LENGTH = 4;
 const int8_t PIEZO = 8;
 const int16_t PIEZO_FREQ = 100;
 
-const int16_t LIGHT_BLINK_MILLI = 400;
-const int16_t PATTERN_SPACING_MILLI = 2000;
+const int8_t LIGHTS = 4;
+typedef struct {
+  int8_t pin;
+} light;
+
+light lights[LIGHTS];
+
+/**
+ * Setup the lights
+ */
+void setup_lights(){
+  lights[0].pin = SIMON_LED0;
+  lights[1].pin = SIMON_LED1;
+  lights[2].pin = SIMON_LED2;
+  lights[3].pin = SIMON_LED3;
+}
+
+const int8_t SIMON_PATTERN_LENGTH = 4;        // how many steps in the 
+const int16_t LIGHT_BLINK_MILLI = 400;        // led remains on for this long & delay between flashes
+const int16_t PATTERN_SPACING_MILLI = 2000;   // time between pattern display in milliseconds
 enum SIMON_STATE {
   RESET,
   FLASH,
@@ -35,8 +52,8 @@ typedef struct {
 simon_round_data simon_data;
 
 void blank_all() {
-  for(int i = SIMON_LED0; i <= SIMON_LED3; i++){
-    digitalWrite(i, LOW); // not the most efficient way, but easy
+  for(int i = 0; i < LIGHTS; i++){
+    digitalWrite(lights[i].pin, LOW);
   }
 }
 
@@ -56,7 +73,7 @@ void handle_pattern(simon_round_data *data){
     {
       blank_all();
       for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
-        data->pattern[i] = random(SIMON_LED0, SIMON_LED3 + 1); // assumes SIMON_LEDs are sequential
+        data->pattern[i] = random(LIGHTS);
       }
       data->curr_index_pattern = 0;
       data->state = FLASH;
@@ -66,7 +83,7 @@ void handle_pattern(simon_round_data *data){
     case FLASH:
     {
       // blink current light
-      digitalWrite(data->pattern[data->curr_index_pattern], HIGH);
+      digitalWrite(lights[data->pattern[data->curr_index_pattern]].pin, HIGH);
       data->curr_index_pattern = (data->curr_index_pattern + 1) % SIMON_PATTERN_LENGTH;
       setup_state(BLINK_WAIT, data);
     }
@@ -221,7 +238,7 @@ void handle_entry() {
   blank_all();
   digitalWrite(SIMON_LED0 + pressed, HIGH);
   if(pressed != BUTTONS){ // check one is pressed
-    data.attempt[data.attempt_index] = pressed + SIMON_LED0;
+    data.attempt[data.attempt_index] = pressed;
     data.attempt_index++;
     buttons[pressed].last_pressed = millis();
     data.display_input = true;
@@ -282,7 +299,7 @@ void handle_game() {
       handle_entry();
 
       if (data.display_input) {
-        digitalWrite(data.curr_input + SIMON_LED0, HIGH);
+        digitalWrite(lights[data.curr_input].pin, HIGH);
         if(now - buttons[data.curr_input].last_pressed > LIGHT_BLINK_MILLI){
           data.display_input = false;
           blank_all();
@@ -340,8 +357,9 @@ void setup() {
   pinMode(BUTTON3, INPUT);
   data.state = GAME_RESET;
 
-  // setup buttons
+  // setup buttons & lights
   setup_buttons();
+  setup_lights();
 
   // piezo
   pinMode(PIEZO, OUTPUT);
