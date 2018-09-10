@@ -162,7 +162,6 @@ void handle_button(button *curr){
     {
       // completed button action
       curr->state = WAITING;
-      curr->last_pressed = millis();
     }
     break;
 
@@ -213,6 +212,7 @@ void handle_entry() {
   if(pressed != BUTTONS){ // check one is pressed
     data.attempt[data.attempt_index] = pressed + SIMON_LED0;
     data.attempt_index++;
+    buttons[pressed].last_pressed = millis();
     if(data.attempt_index == SIMON_PATTERN_LENGTH){
       bool correct = true;
       for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
