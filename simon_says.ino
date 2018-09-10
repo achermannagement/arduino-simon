@@ -133,26 +133,30 @@ void setup_buttons(){
     buttons[i].state = WAITING;
     buttons[i].last_update = 0;
     buttons[i].last_pressed = 0;
-    buttons[i].now = millis(); //TODO: need this in struct?
   }
 }
 
+/**
+ * Handles the state of a given button
+ */
 void handle_button(button *curr); // functions with arguments need to be declared!!!
 void handle_button(button *curr){
-  curr->now = millis();
+  time_t now = millis();
   switch(curr->state){
     case WAITING:
     {
+      // wait until button has been pressed
       if(digitalRead(curr->pin) == HIGH){
         curr->state = BUTTON_DOWN;
-        curr->last_update = millis();
+        curr->last_update = now;
       }
     }
     break;
 
     case BUTTON_DOWN:
     {
-      if(digitalRead(curr->pin) == LOW && (curr->now - curr->last_update > DEBOUNCE_PERIOD)){
+      // wait until the button has been released AND the debounce period has elapsed
+      if(digitalRead(curr->pin) == LOW && (now - curr->last_update > DEBOUNCE_PERIOD)){
         curr->state = BUTTON_RELEASE;
       }
     }
@@ -160,7 +164,8 @@ void handle_button(button *curr){
 
     case BUTTON_RELEASE:
     {
-      // completed button action
+      // acknowledge completed button action
+      // check for this state to identify a button press
       curr->state = WAITING;
     }
     break;
