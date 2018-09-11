@@ -234,9 +234,6 @@ void handle_entry() {
   int pressed;
   // iterate over buttons until we hit the pressed one
   for(pressed = 0; (pressed < BUTTONS) && (buttons[pressed].state != BUTTON_RELEASE); pressed++){}
-  // highlight selected LED
-  blank_all();
-  digitalWrite(SIMON_LED0 + pressed, HIGH);
   if(pressed != BUTTONS){ // check one is pressed
     data.attempt[data.attempt_index] = pressed;
     data.attempt_index++;
@@ -286,6 +283,7 @@ void handle_game() {
       handle_pattern(&simon_data);
       for(int i = 0; i < BUTTONS; i++){
         if(buttons[i].state == BUTTON_RELEASE){
+          blank_all();
           data.state = USER_ENTRY;
           simon_data.state = RESET;
           handle_entry();
