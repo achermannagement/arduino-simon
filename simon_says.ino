@@ -264,7 +264,6 @@ void handle_game() {
     case GAME_RESET:
     {
       data.start = millis();
-      simon_data.state = RESET;
       for(int i = 0; i < BUTTONS; i++){
         buttons[i].state = WAITING;
       }
@@ -285,7 +284,7 @@ void handle_game() {
         if(buttons[i].state == BUTTON_RELEASE){
           blank_all();
           data.state = USER_ENTRY;
-          simon_data.state = RESET;
+          simon_data.state = FLASH;
           handle_entry();
         }
       }
@@ -333,6 +332,7 @@ void handle_game() {
     {
       Serial.println("WIN");
       data.state = GAME_RESET;
+      simon_data.state = RESET;
     }
     break;
 
@@ -354,6 +354,7 @@ void setup() {
   pinMode(BUTTON2, INPUT);
   pinMode(BUTTON3, INPUT);
   data.state = GAME_RESET;
+  simon_data.state = RESET;
 
   // setup buttons & lights
   setup_buttons();
