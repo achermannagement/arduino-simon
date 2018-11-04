@@ -387,7 +387,6 @@ void handle_game() {
         }
       }
       if(count == BUTTONS){ // check if any button has not been pressed for at least two seconds
-      if(count == BUTTONS){
         // go back to displaying the pattern
         simon_data.state = RESET;
         data.state = PATTERN;
