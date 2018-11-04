@@ -290,6 +290,7 @@ game_data data;
  */
 void reset_attempt(){
   data.attempt_index = 0;
+  data.curr_input = 0;
   for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
     data.attempt[i] = UNENTERED_VALUE;
   }
@@ -343,14 +344,10 @@ void handle_game() {
         buttons[i].state = WAITING;
       }
       for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
-        data.attempt[i] = UNENTERED_VALUE;
-      }
-      for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
         simon_data.pattern[i] = random(LIGHTS);
       }
       reset_attempt();
       data.display_input = false;
-      data.curr_input = 0;
       data.state = PATTERN;
     }
     break;
