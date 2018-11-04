@@ -20,20 +20,25 @@
 
 typedef unsigned long time_t;
 
+// led pins
 const int8_t SIMON_LED0 = 2;
 const int8_t SIMON_LED1 = 3;
 const int8_t SIMON_LED2 = 4;
 const int8_t SIMON_LED3 = 5;
 
-// pushbuttons
+// pushbutton pins
 const int8_t BUTTON0 = 9;
 const int8_t BUTTON1 = 10;
 const int8_t BUTTON2 = 11;
 const int8_t BUTTON3 = 12;
 
+// piezo buzzer pin and tone frequency
 const int8_t PIEZO = 8;
 const int16_t PIEZO_FREQ = 100;
 
+/****************************************************************************************************
+ * LED
+ */
 const int8_t LIGHTS = 4;
 typedef struct {
   int8_t pin;
@@ -51,31 +56,52 @@ void setup_lights(){
   lights[3].pin = SIMON_LED3;
 }
 
-const int8_t SIMON_PATTERN_LENGTH = 4;        // how many steps in the 
+/****************************************************************************************************
+ * SIMON ROUND
+ */
+const int8_t SIMON_PATTERN_LENGTH = 4;        // how many steps in the
 const int16_t LIGHT_BLINK_MILLI = 400;        // led remains on for this long & delay between flashes
 const int16_t PATTERN_SPACING_MILLI = 2000;   // time between pattern display in milliseconds
 enum SIMON_STATE {
-  RESET,
-  FLASH,
-  BLINK_WAIT,
-  BLANK,
-  PATTERN_SPACING
+  RESET,                  // the reset state
+  FLASH,                  // an led is turned on
+  BLINK_WAIT,             // wait for a period
+  BLANK,                  // turn off all leds
+  PATTERN_SPACING         // wait for a longer period
 };
 typedef struct {
-  int8_t pattern[SIMON_PATTERN_LENGTH]; // correct pattern
-  int8_t curr_index_pattern;
-  SIMON_STATE state;
-  time_t last_update;
+  int8_t pattern[SIMON_PATTERN_LENGTH]; // correct & displayed pattern
+  int8_t curr_index_pattern;            // current index in displaying pattern
+  SIMON_STATE state;                    // state of simon round
+  time_t last_update;                   // timestamp where last state update occurred
 } simon_round_data;
 
 simon_round_data simon_data;
 
+/**
+ * Turns all LEDs off
+ */
 void blank_all() {
   for(int i = 0; i < LIGHTS; i++){
     digitalWrite(lights[i].pin, LOW);
   }
 }
 
+/**
+ * Turns all LEDs on
+ */
+void light_all() {
+  for(int i = 0; i < LIGHTS; i++){
+    digitalWrite(lights[i].pin, HIGH);
+  }
+}
+
+/**
+ * Updates the simon round data
+ * s        state to progress to
+ * data     round data
+ */
+ void setup_state(SIMON_STATE s, simon_round_data *data);
 void setup_state(SIMON_STATE s, simon_round_data *data) {
   data->last_update = millis();
   data->state = s;
@@ -84,6 +110,7 @@ void setup_state(SIMON_STATE s, simon_round_data *data) {
 /**
  * Handles the display of the Simon pattern
  */
+ void handle_pattern(simon_round_data *data);
 void handle_pattern(simon_round_data *data){
   time_t now = millis();
 
@@ -95,8 +122,8 @@ void handle_pattern(simon_round_data *data){
         data->pattern[i] = random(LIGHTS);
       }
       data->curr_index_pattern = 0;
-      data->state = FLASH;
       data->last_update = millis();
+      data->state = FLASH;
     }
     break;
     case FLASH:
@@ -143,24 +170,34 @@ void handle_pattern(simon_round_data *data){
     }
   }
 }
-// buttons are pulled down, when no button pressed 0V, but pressed button 5V
-const int8_t BUTTONS = 4;  
-const int16_t DEBOUNCE_PERIOD = 100;
+
+/****************************************************************************************************
+ * BUTTONS
+ */
+
+/**
+* Assumes buttons are active high
+* When the button is pressed the pin should read HIGH, LOW otherwise
+*/
+const int8_t BUTTONS = 4;             // number of buttons
+const int16_t DEBOUNCE_PERIOD = 100;  // how long to wait
 enum BUTTON_STATE {
-  WAITING,
-  BUTTON_DOWN,
-  BUTTON_RELEASE
+  WAITING,                            // wait for the button to be pressed
+  BUTTON_DOWN,                        // wait for button to be released + debouncing
+  BUTTON_RELEASE                      // acknowledge the button has been released
 };
 typedef struct {
-  int8_t pin;
-  BUTTON_STATE state;
-  time_t last_update;
-  time_t last_pressed;
-  time_t now;
+  int8_t pin;                         // which pin to read button input from
+  BUTTON_STATE state;                 // current state of button
+  time_t last_update;                 // used to debounce
+  time_t last_pressed;                // last time button was released
 } button;
 
 button buttons[BUTTONS];
 
+/**
+ * Setup buttons
+ */
 void setup_buttons(){
   buttons[0].pin = BUTTON0;
   buttons[1].pin = BUTTON1;
@@ -215,33 +252,43 @@ void handle_button(button *curr){
     break;
   }
 }
+
+/**
+ * Handles the update of all button states
+ */
 void handle_buttons(){
   for(int i = 0; i < BUTTONS; i++){
     handle_button(&(buttons[i]));
   }
 }
 
+/****************************************************************************************************
+ * GAME
+ */
 enum GAME_STATE {
-  GAME_RESET,
-  PATTERN,
-  USER_ENTRY,
-  LOSE,
-  WIN
+  GAME_RESET,                   // reset
+  PATTERN,                      // currently displaying pattern
+  USER_ENTRY,                   // currently accepting and displaying input
+  LOSE,                         // player has lost
+  WIN                           // player has won
 };
 
 const int8_t UNENTERED_VALUE = -1;
 typedef struct {
-  GAME_STATE state;
-  time_t start;
-  int8_t attempt[SIMON_PATTERN_LENGTH]; // stores user attempt
-  int8_t attempt_index;
+  GAME_STATE state;                       // current game state
+  time_t start;                           // timestamp of game start
+  int8_t attempt[SIMON_PATTERN_LENGTH];   // stores user attempt
+  int8_t attempt_index;                   // current user attempt index
 
   // input entry
-  bool display_input;
-  int8_t curr_input;
+  bool display_input;                     // whether to display light selected
+  int8_t curr_input;                      // user entered light
 } game_data;
 game_data data;
 
+/**
+ * Reset user entered attempt
+ */
 void reset_attempt(){
   data.attempt_index = 0;
   for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
@@ -249,16 +296,23 @@ void reset_attempt(){
   }
 }
 
+/**
+ * Once a button has been detected to be released, we handle the result here
+ */
 void handle_entry() {
   int pressed;
   // iterate over buttons until we hit the pressed one
   for(pressed = 0; (pressed < BUTTONS) && (buttons[pressed].state != BUTTON_RELEASE); pressed++){}
   if(pressed != BUTTONS){ // check one is pressed
+    // update the user attempt pattern with pressed button
     data.attempt[data.attempt_index] = pressed;
     data.attempt_index++;
+    // update the last pressed timeframe on the pressed button
     buttons[pressed].last_pressed = millis();
+    // update the light to display
     data.display_input = true;
     data.curr_input = pressed;
+    // if we have a full attempt pattern, compare it to the correct pattern
     if(data.attempt_index == SIMON_PATTERN_LENGTH){
       bool correct = true;
       for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
@@ -276,6 +330,9 @@ void handle_entry() {
   }
 }
 
+/**
+ * Handle the game finite state machine
+ */
 void handle_game() {
   time_t now = millis();
   handle_buttons(); // update all button states
@@ -299,6 +356,7 @@ void handle_game() {
     case PATTERN:
     {
       handle_pattern(&simon_data);
+      // if user input detected, swap to USER_ENTRY state
       for(int i = 0; i < BUTTONS; i++){
         if(buttons[i].state == BUTTON_RELEASE){
           blank_all();
@@ -313,7 +371,7 @@ void handle_game() {
     case USER_ENTRY:
     {
       handle_entry();
-
+      // if we are displaying input currently, display the current input
       if (data.display_input) {
         digitalWrite(lights[data.curr_input].pin, HIGH);
         if(now - buttons[data.curr_input].last_pressed > LIGHT_BLINK_MILLI){
@@ -321,6 +379,7 @@ void handle_game() {
           blank_all();
         }
       }
+      // check if any button has not been pressed for at least two seconds
       int8_t count = 0;
       for(int i = 0; i < BUTTONS; i++){
         if(now - buttons[i].last_pressed > PATTERN_SPACING_MILLI) {
@@ -330,10 +389,7 @@ void handle_game() {
       if(count == BUTTONS){ // check if any button has not been pressed for at least two seconds
         data.state = PATTERN;
         // clear entered user pattern
-        for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
-          data.attempt[i] = UNENTERED_VALUE;
-        }
-        data.attempt_index = 0;
+        reset_attempt();
       }
     }
     break;
@@ -341,6 +397,7 @@ void handle_game() {
     case LOSE:
     {
       Serial.println("LOSE");
+      // play a losing tone
       tone(PIEZO, PIEZO_FREQ, LIGHT_BLINK_MILLI);
       delay(LIGHT_BLINK_MILLI);
       data.state = GAME_RESET;
@@ -389,10 +446,4 @@ void setup() {
 
 void loop() {
   handle_game();
-
-  /*for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
-    Serial.print(data.attempt[i]);
-    Serial.print(" ");
-  }
-  Serial.println();*/
 }
