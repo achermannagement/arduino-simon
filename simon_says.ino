@@ -163,7 +163,8 @@ void handle_pattern(simon_round_data *data){
 
     default:
     {
-      // TODO: error recovery?
+      // should never get here
+      Serial.println("Pattern FSM error");
     }
   }
 }
@@ -244,7 +245,8 @@ void handle_button(button *curr){
 
     default:
     {
-      // TODO: error handling?
+      // should never get here
+      Serial.println("Button FSM error");
     }
     break;
   }
@@ -417,7 +419,8 @@ void handle_game() {
 
     default:
     {
-      // error out?
+      // should never get here
+      Serial.println("Game FSM error");
     }
   }
 }
