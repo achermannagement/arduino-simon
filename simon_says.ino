@@ -272,6 +272,7 @@ enum GAME_STATE {
   WIN                           // player has won
 };
 
+const int8_t VICTORY_ITER = 3; // number of flashes in win state
 const int8_t UNENTERED_VALUE = -1;
 typedef struct {
   GAME_STATE state;                       // current game state
@@ -411,6 +412,14 @@ void handle_game() {
       Serial.println("WIN");
       data.state = GAME_RESET;
       simon_data.state = RESET;
+
+      //TODO: make this non-blocking
+      for(int i = 0; i < VICTORY_ITER; i++){
+        light_all();
+        delay(LIGHT_BLINK_MILLI);
+        blank_all();
+        delay(LIGHT_BLINK_MILLI);
+      }
     }
     break;
 
