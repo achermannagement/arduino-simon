@@ -118,9 +118,6 @@ void handle_pattern(simon_round_data *data){
     case RESET:
     {
       blank_all();
-      for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
-        data->pattern[i] = random(LIGHTS);
-      }
       data->curr_index_pattern = 0;
       data->last_update = millis();
       data->state = FLASH;
@@ -346,6 +343,9 @@ void handle_game() {
       for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
         data.attempt[i] = UNENTERED_VALUE;
       }
+      for(int i = 0; i < SIMON_PATTERN_LENGTH; i++){
+        simon_data.pattern[i] = random(LIGHTS);
+      }
       reset_attempt();
       data.display_input = false;
       data.curr_input = 0;
@@ -387,6 +387,9 @@ void handle_game() {
         }
       }
       if(count == BUTTONS){ // check if any button has not been pressed for at least two seconds
+      if(count == BUTTONS){
+        // go back to displaying the pattern
+        simon_data.state = RESET;
         data.state = PATTERN;
         // clear entered user pattern
         reset_attempt();
@@ -400,7 +403,7 @@ void handle_game() {
       // play a losing tone
       tone(PIEZO, PIEZO_FREQ, LIGHT_BLINK_MILLI);
       delay(LIGHT_BLINK_MILLI);
-      data.state = GAME_RESET;
+      data.state = PATTERN;
     }
     break;
 
