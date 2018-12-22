@@ -1,0 +1,36 @@
+# Simon
+
+Simon implemented on the Arduino Uno
+
+## Getting Started
+
+You will need to build the circuit from the circuit diagram in order for the sketch to work properly.
+
+### Circuit
+
+The circuit diagram is viewable in LibreOffice Draw.
+
+#### Components
+
+* Resistors are only to prevent the LEDs from burning out and operate the push buttons. The actual values do not matter too much as long as they are not excessively high or low. My circuit was implemented with R<sub>1</sub> = 10kohms and R<sub>2</sub> = 470ohms.
+* The particular Piezo Sound module I was using in my project was the [Freetronics Sound and Buzzer Module](https://www.freetronics.com.au/products/sound-and-buzzer-module)
+
+### Sketch
+
+Opening the folder with the Arduino IDE will open the source files for editing or uploading.
+
+## Built With
+
+* [Arduino IDE](https://www.arduino.cc/en/Main/Software)
+* [LibreOffice Draw](https://www.libreoffice.org/)
+* [LibreSymbols](http://sschmidhuber.github.io/LibreSymbols/)
+
+## Authors
+
+* **Joshua Achermann** - *Initial work* - [achermannagement](https://github.com/achermannagement)
+
+See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+
+## License
+
+This project is licensed under the LGPL License - see the [LICENSE](LICENSE) file for details
